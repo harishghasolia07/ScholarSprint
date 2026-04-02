@@ -13,6 +13,10 @@ const envSchema = z.object({
   DEMO_STUDENT_EMAIL: z.string().email().default("student.demo@houseofedtech.dev"),
   DEMO_ADMIN_EMAIL: z.string().email().default("admin.demo@houseofedtech.dev"),
   DEMO_USER_PASSWORD: z.string().min(8).default("DemoPass@2026"),
+  ENABLE_DEMO_LOGIN: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
   FOOTER_NAME: z.string().default("Harish Ghasolia"),
   FOOTER_GITHUB_URL: z.string().default("https://github.com/harishghasolia07"),
   FOOTER_LINKEDIN_URL: z
@@ -33,6 +37,7 @@ export const env = envSchema.parse({
   DEMO_STUDENT_EMAIL: process.env.DEMO_STUDENT_EMAIL,
   DEMO_ADMIN_EMAIL: process.env.DEMO_ADMIN_EMAIL,
   DEMO_USER_PASSWORD: process.env.DEMO_USER_PASSWORD,
+  ENABLE_DEMO_LOGIN: process.env.ENABLE_DEMO_LOGIN,
   FOOTER_NAME: process.env.FOOTER_NAME,
   FOOTER_GITHUB_URL: process.env.FOOTER_GITHUB_URL,
   FOOTER_LINKEDIN_URL: process.env.FOOTER_LINKEDIN_URL,

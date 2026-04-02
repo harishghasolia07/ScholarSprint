@@ -10,12 +10,13 @@ export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
     const session = await auth();
+    const shouldShowDemoLogin = !isProduction || env.ENABLE_DEMO_LOGIN;
 
     if (session?.user?.id) {
         redirect("/dashboard");
     }
 
-    if (!isProduction) {
+    if (shouldShowDemoLogin) {
         await ensureDemoAppUsers();
     }
 
@@ -27,9 +28,9 @@ export default async function LoginPage() {
                     <p className="mt-2 text-sm text-slate-600">Access your assignment dashboard.</p>
                     <div className="mt-6">
                         <LoginForm
-                            demoStudentEmail={!isProduction ? env.DEMO_STUDENT_EMAIL : undefined}
-                            demoAdminEmail={!isProduction ? env.DEMO_ADMIN_EMAIL : undefined}
-                            demoPassword={!isProduction ? env.DEMO_USER_PASSWORD : undefined}
+                            demoStudentEmail={shouldShowDemoLogin ? env.DEMO_STUDENT_EMAIL : undefined}
+                            demoAdminEmail={shouldShowDemoLogin ? env.DEMO_ADMIN_EMAIL : undefined}
+                            demoPassword={shouldShowDemoLogin ? env.DEMO_USER_PASSWORD : undefined}
                         />
                     </div>
                     <p className="mt-4 text-sm text-slate-600">
