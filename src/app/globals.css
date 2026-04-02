@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f6f8;
+  --foreground: #102032;
+  --surface: #ffffff;
+  --accent: #0f766e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-sora);
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-manrope), "Segoe UI", sans-serif;
+  background-image:
+    radial-gradient(circle at 8% 10%, #e7fbf8 0, transparent 28%),
+    radial-gradient(circle at 88% 12%, #dceefe 0, transparent 24%),
+    linear-gradient(180deg, #f9fbfd, #eef3f8);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-sora), "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a,
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
