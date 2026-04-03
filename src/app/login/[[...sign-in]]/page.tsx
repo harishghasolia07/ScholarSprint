@@ -10,14 +10,20 @@ export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
     const session = await auth();
-    const shouldShowDemoLogin = !isProduction || env.ENABLE_DEMO_LOGIN;
+    let shouldShowDemoLogin = !isProduction || env.ENABLE_DEMO_LOGIN;
 
     if (session?.user?.id) {
         redirect("/dashboard");
     }
 
     if (shouldShowDemoLogin) {
-        await ensureDemoAppUsers();
+        try {
+            await ensureDemoAppUsers();
+        } catch (error) {
+            // Do not fail the whole login page if demo account seeding cannot reach MongoDB.
+            console.error("Demo login setup failed", error);
+            shouldShowDemoLogin = false;
+        }
     }
 
     return (
