@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useToast } from "@/components/providers/toast-provider";
+import { getClientErrorMessage, requestJson } from "@/lib/client-http";
 
 export function RegisterForm() {
   const toast = useToast();
@@ -16,31 +17,28 @@ export function RegisterForm() {
     setLoading(true);
     setError("");
 
-    const response = await fetch("/api/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name,
-        email,
-        password,
-      }),
-    });
+    try {
+      await requestJson<{ ok: boolean; userId: string }>("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
+      });
 
-    const payload = (await response.json()) as { error?: string };
-
-    if (!response.ok) {
-      const message = payload.error ?? "Registration failed. Please try again.";
+      toast.success("Account created successfully. Please login.");
+      window.location.href = "/login";
+    } catch (requestError) {
+      const message = getClientErrorMessage(requestError, "Registration failed. Please try again.");
       setError(message);
       toast.error(message);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    toast.success("Account created successfully. Please login.");
-
-    window.location.href = "/login";
   }
 
   return (

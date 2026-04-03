@@ -5,6 +5,7 @@ import { signOut } from "next-auth/react";
 import { useToast } from "@/components/providers/toast-provider";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { getClientErrorMessage, requestJson } from "@/lib/client-http";
 
 type UserRole = "student" | "admin";
 type SubmissionStatus = "not_started" | "in_progress" | "submitted";
@@ -39,17 +40,6 @@ interface StudyPlan {
   generatedPlan: string;
   provider: "gemini" | "fallback";
   createdAt: string;
-}
-
-async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, init);
-  const json = (await response.json()) as T & { error?: string };
-
-  if (!response.ok) {
-    throw new Error(json.error ?? "Request failed");
-  }
-
-  return json;
 }
 
 export function DashboardClient({
@@ -167,7 +157,7 @@ export function DashboardClient({
         await loadSavedPlans();
       }
     } catch (requestError) {
-      const message = (requestError as Error).message;
+      const message = getClientErrorMessage(requestError, "Unable to load dashboard data.");
       setError(message);
       toast.error(message);
     } finally {
@@ -194,7 +184,7 @@ export function DashboardClient({
       setCreateAssignmentForm({ title: "", description: "", course: "", dueDate: "" });
       await loadData();
     } catch (requestError) {
-      const message = (requestError as Error).message;
+      const message = getClientErrorMessage(requestError, "Unable to create assignment.");
       setError(message);
       toast.error(message);
     }
@@ -238,7 +228,7 @@ export function DashboardClient({
       setUpdateAssignmentForm((prev) => ({ ...prev, title: "", description: "", course: "", dueDate: "" }));
       await loadData();
     } catch (requestError) {
-      const message = (requestError as Error).message;
+      const message = getClientErrorMessage(requestError, "Unable to update assignment.");
       setError(message);
       toast.error(message);
     }
@@ -255,7 +245,7 @@ export function DashboardClient({
       toast.success("Assignment deleted.");
       await loadData();
     } catch (requestError) {
-      const message = (requestError as Error).message;
+      const message = getClientErrorMessage(requestError, "Unable to delete assignment.");
       setError(message);
       toast.error(message);
     }
@@ -275,7 +265,7 @@ export function DashboardClient({
       toast.success("Assignment status saved.");
       await loadData();
     } catch (requestError) {
-      const message = (requestError as Error).message;
+      const message = getClientErrorMessage(requestError, "Unable to save submission.");
       setError(message);
       toast.error(message);
     }
@@ -292,7 +282,7 @@ export function DashboardClient({
       toast.success("Submission deleted.");
       await loadData();
     } catch (requestError) {
-      const message = (requestError as Error).message;
+      const message = getClientErrorMessage(requestError, "Unable to delete submission.");
       setError(message);
       toast.error(message);
     }
@@ -319,7 +309,7 @@ export function DashboardClient({
       toast.success("Review saved.");
       await loadData();
     } catch (requestError) {
-      const message = (requestError as Error).message;
+      const message = getClientErrorMessage(requestError, "Unable to save review.");
       setError(message);
       toast.error(message);
     }
@@ -342,7 +332,7 @@ export function DashboardClient({
       await loadSavedPlans();
       toast.success("Study plan generated successfully.");
     } catch (requestError) {
-      const message = (requestError as Error).message;
+      const message = getClientErrorMessage(requestError, "Unable to generate study plan.");
       setError(message);
       toast.error(message);
     } finally {
@@ -379,16 +369,22 @@ export function DashboardClient({
       await loadSavedPlans();
       toast.success("Study plan updated.");
     } catch (requestError) {
-      const message = (requestError as Error).message;
+      const message = getClientErrorMessage(requestError, "Unable to save study plan.");
       setError(message);
       toast.error(message);
     }
   }
 
   async function handleSignOut() {
-    toast.info("Signing out...");
-    await signOut({ redirect: false });
-    window.location.href = `${window.location.origin}/login`;
+    try {
+      toast.info("Signing out...");
+      await signOut({ redirect: false });
+      window.location.href = `${window.location.origin}/login`;
+    } catch (requestError) {
+      const message = getClientErrorMessage(requestError, "Unable to sign out right now.");
+      setError(message);
+      toast.error(message);
+    }
   }
 
   function handleLoadSavedPlan(plan: StudyPlan) {

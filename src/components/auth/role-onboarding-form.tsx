@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/providers/toast-provider";
+import { getClientErrorMessage, requestJson } from "@/lib/client-http";
 
 type SelectableRole = "student" | "admin";
 
@@ -20,7 +21,7 @@ export function RoleOnboardingForm() {
     setError("");
 
     try {
-      const response = await fetch("/api/users/role", {
+      await requestJson<{ ok: boolean }>("/api/users/role", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -29,18 +30,12 @@ export function RoleOnboardingForm() {
         }),
       });
 
-      const json = (await response.json()) as { error?: string };
-
-      if (!response.ok) {
-        throw new Error(json.error ?? "Unable to set role.");
-      }
-
       toast.success("Role updated successfully.");
 
       router.replace("/dashboard");
       router.refresh();
     } catch (requestError) {
-      const message = (requestError as Error).message;
+      const message = getClientErrorMessage(requestError, "Unable to set role.");
       setError(message);
       toast.error(message);
     } finally {

@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useToast } from "@/components/providers/toast-provider";
+import { getClientErrorMessage, requestJson } from "@/lib/client-http";
 
 export function LoginForm(props: {
     demoStudentEmail?: string;
@@ -16,18 +17,13 @@ export function LoginForm(props: {
     const [error, setError] = useState("");
 
     async function accountExists(inputEmail: string): Promise<boolean> {
-        const response = await fetch("/api/auth/account-exists", {
+        const response = await requestJson<{ exists?: boolean }>("/api/auth/account-exists", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: inputEmail }),
         });
 
-        if (!response.ok) {
-      return false;
-        }
-
-        const json = (await response.json()) as { exists?: boolean };
-        return Boolean(json.exists);
+        return Boolean(response.exists);
     }
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -35,33 +31,40 @@ export function LoginForm(props: {
         setLoading(true);
         setError("");
 
-        const normalizedEmail = email.toLowerCase().trim();
-        const exists = await accountExists(normalizedEmail);
+        try {
+            const normalizedEmail = email.toLowerCase().trim();
+            const exists = await accountExists(normalizedEmail);
 
-        if (!exists) {
-            setError("Account not found. Please register first.");
-            toast.error("Account not found. Please register first.");
+            if (!exists) {
+                const message = "Account not found. Please register first.";
+                setError(message);
+                toast.error(message);
+                return;
+            }
+
+            const result = await signIn("credentials", {
+                email: normalizedEmail,
+                password,
+                redirect: false,
+                callbackUrl: "/dashboard",
+            });
+
+            if (!result || result.error) {
+                const message = "Incorrect password. Please try again.";
+                setError(message);
+                toast.error(message);
+                return;
+            }
+
+            toast.success("Logged in successfully.");
+            window.location.href = "/dashboard";
+        } catch (requestError) {
+            const message = getClientErrorMessage(requestError, "Unable to sign in right now.");
+            setError(message);
+            toast.error(message);
+        } finally {
             setLoading(false);
-            return;
         }
-
-        const result = await signIn("credentials", {
-            email: normalizedEmail,
-            password,
-            redirect: false,
-            callbackUrl: "/dashboard",
-        });
-
-        if (!result || result.error) {
-            setError("Incorrect password. Please try again.");
-            toast.error("Incorrect password. Please try again.");
-            setLoading(false);
-            return;
-        }
-
-        toast.success("Logged in successfully.");
-
-        window.location.href = "/dashboard";
     }
 
     async function quickLogin(role: "student" | "admin") {
@@ -78,23 +81,30 @@ export function LoginForm(props: {
         setLoading(true);
         setError("");
 
-        const result = await signIn("credentials", {
-            email: selectedEmail,
-            password: selectedPassword,
-            redirect: false,
-            callbackUrl: "/dashboard",
-        });
+        try {
+            const result = await signIn("credentials", {
+                email: selectedEmail,
+                password: selectedPassword,
+                redirect: false,
+                callbackUrl: "/dashboard",
+            });
 
-        if (!result || result.error) {
-            setError(`Unable to login as ${role}.`);
-            toast.error(`Unable to login as ${role}.`);
+            if (!result || result.error) {
+                const message = `Unable to login as ${role}.`;
+                setError(message);
+                toast.error(message);
+                return;
+            }
+
+            toast.success(`Logged in as ${role}.`);
+            window.location.href = "/dashboard";
+        } catch (requestError) {
+            const message = getClientErrorMessage(requestError, `Unable to login as ${role}.`);
+            setError(message);
+            toast.error(message);
+        } finally {
             setLoading(false);
-            return;
         }
-
-        toast.success(`Logged in as ${role}.`);
-
-        window.location.href = "/dashboard";
     }
 
     return (
