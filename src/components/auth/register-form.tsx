@@ -43,25 +43,43 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
+      <label htmlFor="register-name" className="sr-only">
+        Full name
+      </label>
       <input
+        id="register-name"
         required
         type="text"
         value={name}
         onChange={(event) => setName(event.target.value)}
         className="w-full rounded-xl border border-slate-300 px-3 py-2"
         placeholder="Full name"
+        autoComplete="name"
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? "register-error" : undefined}
       />
 
+      <label htmlFor="register-email" className="sr-only">
+        Email
+      </label>
       <input
+        id="register-email"
         required
         type="email"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
         className="w-full rounded-xl border border-slate-300 px-3 py-2"
         placeholder="Email"
+        autoComplete="email"
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? "register-error" : undefined}
       />
 
+      <label htmlFor="register-password" className="sr-only">
+        Password
+      </label>
       <input
+        id="register-password"
         required
         type="password"
         value={password}
@@ -69,6 +87,9 @@ export function RegisterForm() {
         className="w-full rounded-xl border border-slate-300 px-3 py-2"
         placeholder="Password"
         minLength={8}
+        autoComplete="new-password"
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? "register-error" : undefined}
       />
 
       <button
@@ -79,7 +100,11 @@ export function RegisterForm() {
         {loading ? "Creating account..." : "Create account"}
       </button>
 
-      {error ? <p className="text-sm font-medium text-rose-700">{error}</p> : null}
+      {error ? (
+        <p id="register-error" role="alert" aria-live="polite" className="text-sm font-medium text-rose-700">
+          {error}
+        </p>
+      ) : null}
     </form>
   );
 }

@@ -109,22 +109,36 @@ export function LoginForm(props: {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-3">
+            <label htmlFor="login-email" className="sr-only">
+                Email
+            </label>
             <input
+                id="login-email"
                 required
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 className="w-full rounded-xl border border-slate-300 px-3 py-2"
                 placeholder="Email"
+                autoComplete="email"
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? "login-error" : undefined}
             />
 
+            <label htmlFor="login-password" className="sr-only">
+                Password
+            </label>
             <input
+                id="login-password"
                 required
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 className="w-full rounded-xl border border-slate-300 px-3 py-2"
                 placeholder="Password"
+                autoComplete="current-password"
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? "login-error" : undefined}
             />
 
             <button
@@ -156,7 +170,11 @@ export function LoginForm(props: {
                 </div>
             ) : null}
 
-            {error ? <p className="text-sm font-medium text-rose-700">{error}</p> : null}
+            {error ? (
+                <p id="login-error" role="alert" aria-live="polite" className="text-sm font-medium text-rose-700">
+                    {error}
+                </p>
+            ) : null}
         </form>
     );
 }
