@@ -23,7 +23,7 @@ export function LoginForm(props: {
         });
 
         if (!response.ok) {
-            return true;
+      return false;
         }
 
         const json = (await response.json()) as { exists?: boolean };
